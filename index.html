@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="jquery.css"/>
+    <script type="text/javascript" src="jquery.js"></script>
+    <style type="text/css">
+        .main{width: 600px;margin: 20px auto 0;border:1px solid #ccc;}
+        .con{width: 600px;position: relative;}
+        .title{width: 100%;overflow: hidden;border-bottom: 1px solid #ccc;}
+        .time{width: 45%;height: 40px;float: left;line-height: 40px;padding-left: 15px;font-size: 16px;color: #b75d7d;font-weight: bold}
+        .time span{font-size: 16px;color: #b75d7d;font-weight: bold}
+        .moveImg{width: 100%;height: 600px;cursor: move;position: relative;}
+        .moveImg p{width: 200px;height: 200px;position: absolute}
+        .moveImg p img{width: 200px;height: 200px; }
+        .last{position: absolute;bottom: 0;right: 0;width: 200px;height: 200px;display: none;}
+        .last img{width: 200px;height: 200px;}
+        .showImg{position: absolute; width: 600px;height: 600px;top: 41px;left: 0;z-index: 999;}
+        .showImg img{width: 100%;height: 100%;}
+        .start{width: 150px;height: 40px;line-height: 40px;text-align: center;background: #2384c2;position: absolute;top: 45%;left: 37%;z-index: 9999;border-radius: 3px;color: #fff;cursor: pointer;font-size: 14px;}
+        .success{position: absolute; z-index: 99999;top: 30%;left: 32%;width: 242px;text-align: center;overflow: hidden; display: none}
+        .success span{font-size: 30px; font-weight: bold; width: 60px;float: left;}
+        .success p{font-size: 20px;margin-top: 15px;color: #2e3a74;}
+        i{font-style: normal;color: #2e3a74;}
+    </style>
+</head>
+<body>
+<div class="main">
+    <div class="con">
+        <div class="success">
+            <span>通</span>
+            <span>关</span>
+            <span>了</span>
+            <span>！</span>
+            <p>用时：<i>100</i></p>
+        </div>
+        <div class="start">
+            开始
+        </div>
+        <div class="showImg">
+            <img src="images/img.jpg" alt="">
+        </div>
+        <div class="title">
+            <div class="time">时间：<span></span></div>
+        </div>
+        <div class="moveImg">
+            <div class="last"><img src="images/img9.png" alt=""></div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function(){
+        var getTimerC=0;
+        var getTimerS=0;
+        var getTimerH=0;
+        var getTimerCc=0;
+        var getTimerSs=0;
+        var getTimerHh=0;
+        var timer;
+        $(".time span").html(getTimerHh+""+getTimerH+" : "+getTimerSs+getTimerS+" : "+getTimerCc+getTimerC);
+        $(".start").click(function () {
+            $(".start").hide()
+            $(".showImg").animate({
+                "width":"0",
+                "height":"0",
+                "top":$(".con").height()/2-40+"px",
+                "left":$(".con").width()/2+"px"
+            },function () {
+                $(".showImg").hide()
+            });
+            timer=setInterval(function () {
+                getTimerC++;
+                if(getTimerC==10){
+                    getTimerC=0;
+                    getTimerS++;
+                }
+                if(getTimerS>=60){
+                    getTimerH++;
+                    getTimerS=0;
+                }
+                if(getTimerCc<10){
+                    getTimerCc=0;
+                }else{
+                    getTimerCc=''
+                }
+                if(getTimerS<10){
+                    getTimerSs=0;
+                }else{
+                    getTimerSs=''
+                }
+                if(getTimerHh<10){
+                    getTimerHh=0;
+                }else{
+                    getTimerHh=''
+                }
+                $(".time span").html(getTimerHh+""+getTimerH+" : "+getTimerSs+getTimerS+" : "+getTimerCc+getTimerC)
+            },100)
+        });
+        var numT=0;
+        var numL=0;
+        for(var i=1;i<9;i++){
+            $(".moveImg").append("<p><img src='images/img"+i+".png' alt=''></p>")
+        }
+        var mDX,mDY,mMX,mMY;
+        var dirArr=[];
+        var sumArr=[];
+        var sunIndex;
+        var getArr=[]; //带有顺序的值,左后要与之比较
+        var getRandom=[];
+        var removeArr=[];
+        for (var h=0;h<$(".moveImg p").size();h++){
+            numT=parseInt(h/3);
+            numL=h % 3;
+            dirArr.push(numL*200);
+            dirArr.push(numT*200);
+            getArr.push([numL*200,numT*200]);
+            removeArr.push(dirArr);
+            dirArr=[];
+        }
+        $(".moveImg p").each(function (index) {
+            $(this).find("img").attr('ondragstart','return false');
+            var getIndex=parseInt(Math.random() * removeArr.length);
+            var getRArr=removeArr[getIndex];
+            sumArr.push(getRArr);
+            removeArr.splice(getIndex,1);
+            $(this).css({
+                "top":getRArr[1]+"px",
+                "left":getRArr[0]+"px"
+            });
+            $(this).mousedown(function (evt) {
+                sunIndex=index;
+                mDX=evt.clientX;
+                mDY=evt.clientY;
+                $(document).bind("mousemove",function (ev) {
+                    mMX=ev.clientX;
+                    mMY=ev.clientY;
+                });
+                var getTop,getLeft,ifTrue=false;
+                $(document).mouseup(function () {
+                    $(document).unbind("mousemove");
+                    // 上、下、左、右
+                    if(Math.abs(mMX-mDX) <= Math.abs(mMY-mDY)){
+                        // 上、下
+                        if(mMY-mDY<=0){
+                            // 上
+                            getTop=sumArr[sunIndex][1]-200;
+                            getLeft=sumArr[sunIndex][0];
+                        }else{
+                            // 下
+                            getTop=sumArr[sunIndex][1]+200;
+                            getLeft=sumArr[sunIndex][0];
+                        }
+                    }else{
+                        // 左、右
+                        if(mMX-mDX<=0){
+                            // 左
+                            getTop=sumArr[sunIndex][1];
+                            getLeft=sumArr[sunIndex][0]-200;
+                        }else{
+                            // 右
+                            getTop=sumArr[sunIndex][1];
+                            getLeft=sumArr[sunIndex][0]+200;
+                        }
+                    }
+                    if ((getTop>=0 && getTop<600) && (getLeft>=0 && getLeft<600)){
+                        for(var j in sumArr){
+                            if(sumArr[j][0]==getLeft && sumArr[j][1]==getTop){
+                                ifTrue=true;
+                                break;
+                            }else{
+                                ifTrue=false;
+                            }
+                        }
+                        if (ifTrue==false){
+                            $(".moveImg p").eq(sunIndex).animate({
+                                "left":getLeft+"px",
+                                "top":getTop+"px"
+                            });
+                            sumArr[sunIndex][1]=getTop;
+                            sumArr[sunIndex][0]=getLeft;
+                        }
+                    }
+                    if (sumArr.toString()==getArr.toString()){
+                        $(".showImg").show();
+                        clearInterval(timer);
+                        $(".showImg").animate({
+                            "width":$(".moveImg").width()+50+"px",
+                            "height":$(".moveImg").height()+50+"px",
+                            "top":"-5px",
+                            "left":"-25px",
+                        });
+                        $(".success").show();
+                        var fontsS=12;
+                        var colorC=["red","orange","yellow","green","blue","#b75d7d"];
+                        setInterval(function () {
+                            if(fontsS==12){
+                                fontsS=30
+                            }else if(fontsS==30){
+                                fontsS=12
+                            }
+                            $(".success span").css({"color":colorC[parseInt(Math.random()*colorC.length)]});
+                            $(".success span").animate({
+                                "fontSize":fontsS+"px"
+                            });
+                        },200);
+                        $(".success p i").html(getTimerHh+""+getTimerH+" : "+getTimerSs+getTimerS+" : "+getTimerCc+getTimerC);
+                    }
+                });
+            });
+        });
+    })
+</script>
+</body>
+</html>
